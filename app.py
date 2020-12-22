@@ -1,6 +1,7 @@
 #----------------------------------------------------------------------------#
 # Imports
 #----------------------------------------------------------------------------#
+from model import db, Artist, Venue, Show
 
 import json
 import dateutil.parser
@@ -16,15 +17,11 @@ from flask_migrate import Migrate
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
-
 app = Flask(__name__)
-moment = Moment(app)
 app.config.from_object('config')
-db = SQLAlchemy(app)
-
+moment = Moment(app)
+db.init_app(app)
 migrate = Migrate(app, db)
-# TODO: connect to a local postgresql database
-
 
 #----------------------------------------------------------------------------#
 # Filters.
