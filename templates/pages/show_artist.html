@@ -5,14 +5,19 @@
 	<div class="col-sm-6">
 		<h1 class="monospace">
 			{{ artist.name }}
+			<a href="/artists/{{ artist.id }}/edit" style="font-size: 18px;">
+				<i class="fas fa-pen"></i>
+			</a>
 		</h1>
 		<p class="subtitle">
 			ID: {{ artist.id }}
 		</p>
 		<div class="genres">
-			{% for genre in artist.genres %}
-			<span class="genre">{{ genre }}</span>
-			{% endfor %}
+			{% if artist.genres | length %}
+				{% for genre in artist.genres %}
+				<span class="genre">{{ genre }}</span>
+				{% endfor %}
+			{% endif %}
 		</div>
 		<p>
 			<i class="fas fa-globe-americas"></i> {{ artist.city }}, {{ artist.state }}

@@ -3,6 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_moment import Moment
 import datetime
+import json
+
 
 db = SQLAlchemy()
 
@@ -39,10 +41,12 @@ class Venue(db.Model):
 
     @property
     def serialize(self):
+        print(self.genres)
+        print("=" * 50)
         return {
             'id': self.id,
             'name': self.name,
-            'genres': self.genres.split(','),
+            'genres': json.loads(self.genres),
             'city': self.city,
             'state': self.state,
             'address': self.address,
@@ -76,6 +80,8 @@ class Venue(db.Model):
 
     @property
     def serialize_with_shows_details(self):
+        print(self.genres)
+        print("=" * 100)
         return {
             'id': self.id,
             'name': self.name,
@@ -87,6 +93,7 @@ class Venue(db.Model):
             'image_link': self.image_link,
             'seeking_description': self.seeking_description,
             'seeking_talent': self.seeking_talent,
+            'genres': json.loads(self.genres),
             'website': self.website,
             'upcoming_shows': [
                 show.serialize_with_artist_venue for show in Show.query.filter(
@@ -167,7 +174,7 @@ class Artist(db.Model):
             'name': self.name,
             'city': self.city,
             'state': self.state,
-            'genres': self.genres,
+            'genres': json.loads(self.genres),
             'phone': self.phone,
             'facebook_link': self.facebook_link,
             'image_link': self.image_link,
@@ -209,7 +216,7 @@ class Artist(db.Model):
             'state': self.state,
             'phone': self.phone,
             'image_link': self.image_link,
-            'genres': self.genres,
+            'genres': json.loads(self.genres),
             'seeking_venue': self.seeking_venue,
             'facebook_link': self.facebook_link,
         }
