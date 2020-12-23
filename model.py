@@ -41,8 +41,6 @@ class Venue(db.Model):
 
     @property
     def serialize(self):
-        print(self.genres)
-        print("=" * 50)
         return {
             'id': self.id,
             'name': self.name,
@@ -80,8 +78,6 @@ class Venue(db.Model):
 
     @property
     def serialize_with_shows_details(self):
-        print(self.genres)
-        print("=" * 100)
         return {
             'id': self.id,
             'name': self.name,
