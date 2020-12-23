@@ -1,6 +1,7 @@
 #----------------------------------------------------------------------------#
 # Imports
 #----------------------------------------------------------------------------#
+from threading import local
 from model import db, Artist, Venue, Show
 from sqlalchemy.orm.exc import NoResultFound
 import traceback
@@ -74,15 +75,67 @@ def search_venues():
 		search_term=request.form.get('search_term', '')
 	)
 
+# @app.route('/venues/<int:venue_id>')
+# def show_venue(venue_id):
+#     venues = Venue.query.filter(Venue.id == venue_id).one_or_none()
+
+#     if venues is None:
+#         abort(404)
+
+#     data = venues.serialize_with_shows_details
+#     return render_template('pages/show_venue.html', venue=data)
+
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
-    venues = Venue.query.filter(Venue.id == venue_id).one_or_none()
+  
+  venue = Venue.query.get(venue_id)
 
-    if venues is None:
-        abort(404)
+  if not venue: 
+    return render_template('errors/404.html')
 
-    data = venues.serialize_with_shows_details
-    return render_template('pages/show_venue.html', venue=data)
+  upcoming_shows_query = db.session.query(Show).join(Artist).filter(Show.venue_id==venue_id).filter(Show.start_time>datetime.now()).all()
+  upcoming_shows = []
+
+  past_shows_query = db.session.query(Show).join(Artist).filter(Show.venue_id==venue_id).filter(Show.start_time<datetime.now()).all()
+  past_shows = []
+
+  for show in past_shows_query:
+    past_shows.append({
+      "artist_id": show.artist_id,
+      "artist_name": show.artist.name,
+      "artist_image_link": show.artist.image_link,
+      "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')
+    })
+
+  for show in upcoming_shows_query:
+    upcoming_shows.append({
+      "artist_id": show.artist_id,
+      "artist_name": show.artist.name,
+      "artist_image_link": show.artist.image_link,
+      "start_time": show.start_time.strftime("%Y-%m-%d %H:%M:%S")    
+    })
+
+  data = {
+    "id": venue.id,
+    "name": venue.name,
+    "genres": venue.genres,
+    "address": venue.address,
+    "city": venue.city,
+    "state": venue.state,
+    "phone": venue.phone,
+    "website": venue.website,
+    "facebook_link": venue.facebook_link,
+    "seeking_talent": venue.seeking_talent,
+    "seeking_description": venue.seeking_description,
+    "image_link": venue.image_link,
+    "past_shows": past_shows,
+    "upcoming_shows": upcoming_shows,
+    "past_shows_count": len(past_shows),
+    "upcoming_shows_count": len(upcoming_shows),
+  }
+
+  return render_template('pages/show_venue.html', venue=data)
+
 
 #  Create Venue
 #  ----------------------------------------------------------------
@@ -149,14 +202,68 @@ def search_artists():
     search_term=request.form.get('search_term', '')
   )
 
+# @app.route('/artists/<int:artist_id>')
+# def show_artist(artist_id):
+#   artist = Artist.query.filter(Artist.id == artist_id).one_or_none()
+
+#   if artist is None:
+#     abort(404)
+
+#   data = artist.serialize_with_shows_details
+#   return render_template('pages/show_artist.html', artist=data)
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
-  artist = Artist.query.filter(Artist.id == artist_id).one_or_none()
+  artist_query = db.session.query(Artist).get(artist_id)
 
-  if artist is None:
-    abort(404)
+  if not artist_query: 
+    return render_template('errors/404.html')
 
-  data = artist.serialize_with_shows_details
+  past_shows_query = db.session.query(Show).join(Venue).filter(Show.artist_id==artist_id).filter(Show.start_time>datetime.now()).all()
+  past_shows = []
+
+  for show in past_shows_query:
+    past_shows.append({
+      "venue_id": show.venue_id,
+      "venue_name": show.venue.name,
+      "artist_image_link": show.venue.image_link,
+      "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')
+    })
+
+  upcoming_shows_query = db.session.query(Show).join(Venue).filter(Show.artist_id==artist_id).filter(Show.start_time>datetime.now()).all()
+  upcoming_shows = []
+
+  for show in upcoming_shows_query:
+    upcoming_shows.append({
+      "venue_id": show.venue_id,
+      "venue_name": show.venue.name,
+      "artist_image_link": show.venue.image_link,
+      "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')
+    })
+
+
+  data = {
+    "id": artist_query.id,
+    "name": artist_query.name,
+    "genres": artist_query.genres,
+    "city": artist_query.city,
+    "state": artist_query.state,
+    "phone": artist_query.phone,
+    "website": artist_query.website,
+    "facebook_link": artist_query.facebook_link,
+    "seeking_venue": artist_query.seeking_venue,
+    "seeking_description": artist_query.seeking_description,
+    "image_link": artist_query.image_link,
+    "past_shows": past_shows,
+    "upcoming_shows": upcoming_shows,
+    "past_shows_count": len(past_shows),
+    "upcoming_shows_count": len(upcoming_shows),
+  }
+
+  for k, v in locals().items():
+    print('-' * 10)
+    print(f"{k} : {v}")
+    print('-' * 10)
+
   return render_template('pages/show_artist.html', artist=data)
 
 
